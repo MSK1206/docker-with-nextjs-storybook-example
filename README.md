@@ -88,8 +88,14 @@ docker-compose build
 ```bash
 docker-compose run --rm app sh -c 'npx create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias @/* --use-npm'
 ```
-
 ※options を指定してインストールする場合は公式の[`APIリファレンス`](https://nextjs.org/docs/pages/api-reference/create-next-app)を参照し適宜自分の合ったものに変更してください。
+
+## Storybook のインストール
+```bash
+docker-compose run --rm app npx storybook@latest init
+
+docker-compose run --rm app npx storybook@latest add @storybook/addon-styling-webpack
+```
 
 ## Next.js を動かしてみる
 
