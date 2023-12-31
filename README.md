@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Docker で Next.js + Storybook の開発環境を作る
 
-## Getting Started
-
-First, run the development server:
+## ディレクトリの作成
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+mkdir docker-with-nextjs-storybook-example
+
+cd docker-with-nextjs-storybook-example
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Dockerfile & docker-compose.yml を作成
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Linux,Mac をお使いはおなじみの touch で作りましょう。
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+- Windows で PowerShell をインストールしている場合
 
-## Learn More
+```powershell
+new-item Dockerfile, docker-compose.yml, docker-compose-storybook.yml
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Dockerfile
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```dockerfile
+FROM node:20.10.0-alpine
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+WORKDIR /app
 
-## Deploy on Vercel
+RUN npm install -g npm@10.2.5
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## docker-compose.yml
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+```yml
+version: '3.9'
+
+services:
+  app:
+    container_name: next-app
+    build:
+      context: .
+    tty: true
+    environment:
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./next-app:/app
+    ports:
+      - '3000:3000'
+    command: sh -c "npm run dev"
+```
+
+- Tips: ホットリロードを有効にしておく記述
+
+```yml
+environment:
+  - WATCHPACK_POLLING=true
+```
+
+## docker-compose-storybook.yml
+
+```yml
+version: '3.9'
+
+services:
+  app:
+    container_name: storybook
+    build:
+      context: .
+    tty: true
+    environment:
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./next-app:/app
+    ports:
+      - '6006:6006'
+    command: sh -c "npm run storybook"
+```
+
+## image を構築
+
+```bash
+docker-compose build
+```
+
+## Next.js のインストール
+
+対話形式に沿ってインストール
+
+```bash
+docker-compose run --rm app sh -c 'npx create-next-app@latest . --ts --tailwind --eslint --app --src-dir --import-alias @/* --use-npm'
+```
+
+※options を指定してインストールする場合は公式の[`APIリファレンス`](https://nextjs.org/docs/pages/api-reference/create-next-app)を参照し適宜自分の合ったものに変更してください。
+
+## Next.js を動かしてみる
+
+```bash
+docker-compose up
+```
+
+[`localhost:3000`](http://localhost:3000) でアクセスできれば OK です。
+
+## ついでに Storybook を動かす
+
+```bash
+docker-compose -f docker-compose-storybook.yml up
+```
+
+[`localhost:6006`](http://localhost:6006) でアクセスできれば OK です。
