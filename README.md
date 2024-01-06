@@ -31,7 +31,7 @@ RUN npm install -g npm@10.2.5
 ## docker-compose.yml
 
 ```yml
-version: '3.9'
+version: '3.8'
 
 services:
   app:
@@ -58,7 +58,7 @@ environment:
 ## docker-compose-storybook.yml
 
 ```yml
-version: '3.9'
+version: '3.8'
 
 services:
   app:
